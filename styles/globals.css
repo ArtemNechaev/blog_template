@@ -14,3 +14,33 @@ a {
 * {
   box-sizing: border-box;
 }
+
+nav {
+  display: flex;
+  padding: 2rem;
+  align-items: center;
+}
+
+@media (min-width: 481px) and (max-width:768px) {
+  .mobile {
+    display: flex;
+  }
+  .desctop {
+    display:none;
+  }
+}
+/* для декстопов */
+@media (min-width:769px) {
+  .mobile {
+    display: none;
+  }
+  .desctop {
+    display:flex;
+  }
+}
+
+.mobile {
+  top: auto;
+  bottom: 0;
+
+}

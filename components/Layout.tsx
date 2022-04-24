@@ -1,50 +1,73 @@
-import React, { ReactNode } from "react";
-import Header from "./Header";
+import React, { ReactNode, useCallback, } from "react";
+import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
+import DesctopMenu from "./Menu/DesctopMenu";
+import Drawer from './Menu/Drawer';
+import MobileMenu from './Menu/MobileMenu';
+import { useRouter } from "next/router";
+import appRoutes from '../lib/appRoutes';
+import Toolbar from '@material-ui/core/Toolbar'
+import { Button } from "@material-ui/core";
+import { useAppSelector } from "../store";
 
 type Props = {
   children: ReactNode;
 };
+const useStyle = makeStyles((theme: Theme) => createStyles({
+  sectionDesktop: {
+    display: 'none',
+    [theme.breakpoints.up('md')]: {
+      display: 'flex',
+    }
 
-const Layout: React.FC<Props> = (props) => (
-  <div>
-    <Header />
-    <div className="layout">{props.children}</div>
-    <style jsx global>{`
-      html {
-        box-sizing: border-box;
-      }
+  },
+  sectionMobile: {
+    display: 'flex',
+    [theme.breakpoints.up('md')]: {
+      display: 'none',
+    }
+  },
+  content: {
+    flexGrow: 1,
+    padding: theme.spacing(3),
+    display: 'flex'
+  },
+}))
 
-      *,
-      *:before,
-      *:after {
-        box-sizing: inherit;
-      }
+const Layout: React.FC<Props> = (props) => {
+  const classes = useStyle()
+  const router = useRouter();
+  const pageId = appRoutes.public.findIndex(item => item.href === router.pathname)
 
-      body {
-        margin: 0;
-        padding: 0;
-        font-size: 16px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-          "Segoe UI Symbol";
-        background: rgba(0, 0, 0, 0.05);
-      }
+  const handleChange = useCallback((event: React.ChangeEvent<{}>, newValue: number) => {
+    if (newValue === -1) {
+      return;
+    }
+    router.push(appRoutes.public[newValue].href)
+  }, [appRoutes]);
 
-      input,
-      textarea {
-        font-size: 16px;
-      }
+  const needDrawer = useAppSelector(state => state.drawer.active)
+  const menuProps = {
+    currentPage: pageId,
+    handleChange: handleChange,
+    activeDrawer: needDrawer,
+  }
 
-      button {
-        cursor: pointer;
-      }
-    `}</style>
-    <style jsx>{`
-      .layout {
-        padding: 0 2rem;
-      }
-    `}</style>
-  </div>
-);
+  return (
+    < React.Fragment >
+      <DesctopMenu
+        className={classes.sectionDesktop}
+        {...menuProps}
+      />
+      <div className={classes.content}>
+        {needDrawer && <Drawer />}
+        {props.children}
+      </div>
+      <MobileMenu
+        className={classes.sectionMobile}
+        {...menuProps}
+      />
+    </React.Fragment >
+  )
+}
 
 export default Layout;
